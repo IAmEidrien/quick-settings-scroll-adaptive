@@ -93,4 +93,24 @@ The repository and compiled Tweaks directory can be bind-mounted into the existi
 
 ## Scope
 
-GNOME 47–50 and other third-party menus/themes were not exhaustively tested. GNOME 51 validation covered ordinary menus; floating Tweaks overlays were validated on GNOME 46. The upstream 46–51 metadata range is retained. Explicit submenu widths remain controlled by Tweaks; this change constrains height rather than overriding its width preference. There is no new preferences page or support for unrelated Shell popup types.
+GNOME 47–50 and other third-party menus/themes were not exhaustively tested. GNOME 51 validation covered ordinary menus; floating Tweaks overlays were validated on GNOME 46. The upstream 46–51 metadata range is retained. Explicit submenu widths remain controlled by Tweaks; this change constrains height rather than overriding its width preference. The preferences page contains only **Show scrollbars**. Unrelated Shell popup types remain outside scope.
+
+
+## Overflow polish validation
+
+The follow-up retains GNOME's `page_size^(2/3)` scroll unit, the same formula used by the date menu's `St.ScrollView`. Source inspection found no additional date-menu distance cap. This extension now additionally caps a single unusually large event at half a viewport; ordinary deltas and nested controls retain their previous behavior.
+
+Floating overlays have 24 logical pixels of work-area clearance. Their fade extends 32 logical pixels inside the themed box rather than starting outside its margins. Main-menu fades retain a 24-pixel theme-scaled extent. Fades disappear at an edge when there is no remaining content there. Native scrollbars reserve width beside controls and are optional; no new color or scrollbar theme is imposed.
+
+Animated close traces showed constant base-menu height, viewport page size and scroll position. Thus the reported blink was not reproduced as a layout contraction. The previous stock fade calculates shader coordinates from a transient offscreen paint box; the updated fade uses allocation coordinates and bounds both views' paint areas. This is a targeted rendering mitigation, not proof of the cause on every compositor/theme. Hardware verification remains outstanding: the managed environment exposes no `/dev/dri` or NVIDIA device, and native runs use llvmpipe.
+
+GNOME 46 tests with animations forced on and Tweaks' Animation feature disabled cover 100% and full 200% scaling, live scrollbar switching, independent adjustments, animated closing traces, focus, both extension orders and reconstruction. GNOME 51 ordinary-menu tests exercise the newer shader API. The previously documented upstream Tweaks destruction warning remains independently reproducible.
+
+`tests/native/prefs.js` exercises the real Adwaita preferences class and its bidirectional settings binding. Run inside the GNOME 46 image with an isolated display and settings:
+
+```sh
+QS_SOURCE=/path/to/quick-settings-scroll-adaptive \
+GI_TYPELIB_PATH=/usr/lib/gnome-shell/girepository-1.0 LD_LIBRARY_PATH=/usr/lib/gnome-shell \
+GSETTINGS_BACKEND=memory dbus-run-session -- xvfb-run -a \
+  gjs -m /path/to/quick-settings-scroll-adaptive/tests/native/prefs.js
+```

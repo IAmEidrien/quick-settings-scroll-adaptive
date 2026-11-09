@@ -7,7 +7,7 @@ ZIPNAME     := $(UUID).shell-extension.zip
 # Throwaway config for the nested shell. See the `nested` recipe for why.
 NESTED_CFG  := /tmp/quick-settings-scroll-nested-config
 
-SOURCES     := extension.js $(wildcard lib/*.js)
+SOURCES     := extension.js prefs.js $(wildcard lib/*.js)
 
 .PHONY: install uninstall enable disable pack nested nested-config test test-syntax clean help
 
@@ -26,12 +26,13 @@ help:
 # Directories are replaced rather than merged, so a file dropped from the
 # source tree does not live on in the installed copy.
 install:
+	@glib-compile-schemas --strict schemas
 	@test ! -e "$(USER_EXTDIR)/.git" || { printf "Git-managed installation: update its checkout instead.\n"; exit 1; }
 	@mkdir -p "$(USER_EXTDIR)"
-	@cp metadata.json extension.js stylesheet.css "$(USER_EXTDIR)/"
+	@cp metadata.json extension.js prefs.js stylesheet.css "$(USER_EXTDIR)/"
 	@rm -rf "$(USER_EXTDIR)/lib"
 	@cp -r lib "$(USER_EXTDIR)/"
-	@cp -r LICENSES docs "$(USER_EXTDIR)/"
+	@cp -r LICENSES docs schemas "$(USER_EXTDIR)/"
 	@cp LICENSE README.md CHANGELOG.md "$(USER_EXTDIR)/" 2>/dev/null || true
 	@printf "Installed to %s\n" "$(USER_EXTDIR)"
 	@printf "Restart GNOME Shell (Xorg: Alt+F2 r ; Wayland: log out / log in)\n"
@@ -94,9 +95,10 @@ test-syntax:
 	done
 
 pack:
+	@glib-compile-schemas --strict schemas
 	@rm -f "$(ZIPNAME)"
 	@zip -qr "$(ZIPNAME)" \
-	    metadata.json extension.js stylesheet.css lib \
+	    metadata.json extension.js prefs.js stylesheet.css lib schemas \
 	    LICENSE LICENSES docs README.md CHANGELOG.md
 	@printf "Built %s\n" "$(ZIPNAME)"
 

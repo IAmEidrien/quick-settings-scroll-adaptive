@@ -7,7 +7,7 @@
 //
 // The whole extension is one patch applied to a menu the shell owns, so this
 // file is only its lifecycle: build it on enable, undo it on disable. There
-// is no state to keep, nothing to poll and no settings to read.
+// is no state to keep, nothing to poll.
 
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
@@ -15,7 +15,7 @@ import { QuickSettingsScroll } from './lib/quick-settings-scroll.js';
 
 export default class QuickSettingsScrollExtension extends Extension {
     enable() {
-        this._patch = new QuickSettingsScroll();
+        this._patch = new QuickSettingsScroll(this.getSettings());
         try {
             this._patch.apply();
         } catch (error) {

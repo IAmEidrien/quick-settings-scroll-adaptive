@@ -5,6 +5,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [1.1.0-adaptive1] - 2026-11-09
 
+### Polish follow-up (testing)
+- Clearer overflow fades aligned with floating menu boundaries, and increased screen-edge clearance.
+- Allocation-based fading and bounded paint areas during animated overlay closing; hardware confirmation of the reported blink remains pending.
+- Optional native scrollbars, with committed schemas for Gitpulsar installations.
+- Half-viewport cap on unusually large scroll events while preserving GNOME's normal scroll unit.
+- Animated close traces, live preference regressions and native Adwaita preferences coverage.
+
 ### Added
 - Independently constrained, scrollable floating Quick Settings Tweaks overlays, including 200% scaling, keyboard focus visibility and dynamic content changes.
 - Theme-derived clipping for floating overlay corners, without replacing the submenu box or Tweaks' animation target.

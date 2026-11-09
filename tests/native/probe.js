@@ -128,7 +128,30 @@ export default class Probe extends Extension {
         };
         boundsCheck('overlay constrained to monitor work area');
         check(menu._grid === grid && menu._overlay === overlay && toggle.menu.box === originalBox, 'shell and QST actor identities preserved');
+        const extensionSettings = Main.extensionManager.lookup(scrollId).stateObj.getSettings();
         const record = patch()._submenus.get(actor);
+        extensionSettings.set_boolean('show-scrollbars', true); await wait(250);
+        check(record.patch.view.vscrollbar_policy === St.PolicyType.AUTOMATIC &&
+            patch()._scrollView.vscrollbar_policy === St.PolicyType.AUTOMATIC,
+            'scrollbars setting applies live to base and floating views');
+        const scrollbar = record.patch.view.vscroll;
+        check(scrollbar.visible && scrollbar.reactive, 'native overflow scrollbar is visible and interactive');
+        const [barX,barY] = scrollbar.get_transformed_position();
+        const [barW,barH] = scrollbar.get_transformed_size();
+        await move(barX+barW/2,barY+barH*0.7);
+        pointer.notify_button(GLib.get_monotonic_time(),1,Clutter.ButtonState.PRESSED);
+        pointer.notify_button(GLib.get_monotonic_time(),1,Clutter.ButtonState.RELEASED);
+        await wait(300);
+        check(record.patch.view.vadjustment.value > 0, 'real pointer click on scrollbar changes overlay position');
+        record.patch.view.vadjustment.value = 0;
+        await shot('scrollbars');
+        extensionSettings.set_boolean('show-scrollbars', false); await wait(250);
+        check(record.patch.view.vscrollbar_policy === St.PolicyType.EXTERNAL,
+            'scrollbars setting restores hidden scrollbar policy');
+        check(record.patch.view.get_effect('fade') === null && record.patch.view.get_effect('qs-scroll-rounded-clip'),
+            'floating fade shares the rounded clipping pass');
+        check(!patch()._scrollView.get_effect('fade') && patch()._scrollView.get_effect('qs-scroll-fade'),
+            'base fade uses stable allocation coordinates during dimming');
         check(record.patch && record.patch.view.vadjustment.upper > record.patch.view.vadjustment.page_size, 'tall overlay has independent scroll range');
         const base = patch()._scrollView.vadjustment, adj = record.patch.view.vadjustment;
         base.value = 80; await wait(100);
@@ -136,6 +159,12 @@ export default class Probe extends Extension {
         adj.value = 0;
         await move(x+w/2, y+h/2); await wheel();
         check(adj.value > 0 && base.value === baseBefore, 'real wheel scrolls overlay without moving base menu');
+        adj.value = 0;
+        patch()._onScroll({is_pointer_emulated:()=>false,
+            get_scroll_direction:()=>Clutter.ScrollDirection.SMOOTH,
+            get_scroll_delta:()=>[0,1000]}, record.patch.view);
+        check(adj.value > 0 && adj.value <= adj.page_size/2+0.01,
+            'large scroll delta cannot skip more than half the viewport');
         const overlayBefore = adj.value;
         const [bx, by] = menu._boxPointer.get_transformed_position();
         await move(bx+12, by+100); await wheel();
@@ -147,7 +176,21 @@ export default class Probe extends Extension {
         check(ry >= vy-1 && ry+rows.at(-1).actor.height <= vy+record.patch.view.height+1, 'keyboard focus reveals final overlay control');
         await shot('overlay-bottom');
         const saved = adj.value;
+        const closingFrames = [];
+        const capture = GLib.timeout_add(0, 8, () => {
+            closingFrames.push({t:GLib.get_monotonic_time(), root:menu._boxPointer.height,
+                grid:menu._grid.height, overlay:actor.height, placeholder:patch()._placeholder.height,
+                upper:base.upper,page:base.page_size, value:base.value,
+                paint:patch()._scrollView.get_paint_box?.()?.[1]?.get_height?.()});
+            return true;
+        });
         toggle.menu.close(); await wait(500);
+        GLib.source_remove(capture);
+        GLib.file_set_contents(`${root}/closing.json`, JSON.stringify(closingFrames));
+        check(closingFrames.every(f => f.root === closingFrames[0].root && f.page === closingFrames[0].page),
+            'base height and viewport remain stable throughout animated closing');
+        check(patch()._scrollView.clip_to_allocation && record.patch.view.clip_to_allocation,
+            'offscreen paint bounds are limited to the view during animation');
         check(base.value === baseBefore, 'closing overlay preserves base scroll position');
         toggle.menu.open(); await wait(650);
         check(Math.abs(adj.value-saved)<1, 'reopening overlay preserves its scroll position');

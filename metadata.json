@@ -11,5 +11,6 @@
         "51"
     ],
     "url": "https://github.com/IAmEidrien/quick-settings-scroll-adaptive",
-    "version-name": "1.1.0-adaptive1"
+    "version-name": "1.1.0-adaptive1",
+    "settings-schema": "org.gnome.shell.extensions.quick-settings-scroll-adaptive"
 }

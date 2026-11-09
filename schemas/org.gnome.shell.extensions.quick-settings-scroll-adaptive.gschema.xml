@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: 2026 Eidrien; SPDX-License-Identifier: MIT -->
+<schemalist>
+  <schema id="org.gnome.shell.extensions.quick-settings-scroll-adaptive" path="/org/gnome/shell/extensions/quick-settings-scroll-adaptive/">
+    <key name="show-scrollbars" type="b">
+      <default>false</default>
+      <summary>Show scrollbars</summary>
+      <description>Show a vertical scrollbar when Quick Settings or a floating submenu overflows.</description>
+    </key>
+  </schema>
+</schemalist>

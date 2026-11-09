@@ -2,7 +2,7 @@
 
 Makes GNOME's Quick Settings menu scroll when it exceeds the available screen height. Floating submenus from [Quick Settings Tweaks](https://github.com/qwreey/quick-settings-tweaks) get independent scrolling, so their controls remain reachable at large UI scales.
 
-This is a fork of [Quick Settings Scroll by Disk_MTH](https://github.com/Disk-MTH/Quick-Settings-Scroll). The focus is compatibility, interoperability and reliable cleanup. There are no additional preferences.
+This is a fork of [Quick Settings Scroll by Disk_MTH](https://github.com/Disk-MTH/Quick-Settings-Scroll). The focus is compatibility, interoperability and reliable cleanup. The optional **Show scrollbars** preference adds native vertical scrollbars when content overflows; it is off by default.
 
 ## Behavior
 
@@ -10,6 +10,7 @@ This is a fork of [Quick Settings Scroll by Disk_MTH](https://github.com/Disk-MT
 - Floating overlays fit the menu's monitor work area with an edge margin. Tall overlays scroll separately from the underlying menu; short overlays use their natural height.
 - Wheel input over the dimmed background cannot scroll the underlying menu. Sliders and nested scrolling lists retain their own wheel handling.
 - Keyboard focus scrolls hidden controls into view. Closing a submenu preserves the underlying menu position and the submenu's position; closing Quick Settings resets scrolling for the next visit.
+- Overflowing views show an edge fade; floating overlays leave 24 logical pixels of screen-edge clearance. Unusually large wheel events are limited to half a viewport, retaining GNOME’s normal scroll unit.
 - Existing theme colors, spacing and corner radii are used. Tweaks keeps its original submenu box and animation target.
 - Scale, monitor work-area and content changes recalculate constraints. Disabling restores the original actors and removes owned callbacks and styles.
 
@@ -32,6 +33,8 @@ The upstream UUID is deliberately retained for in-place replacement. **Use eithe
 GNOME caches extension modules: after changing installed JavaScript, start a new session to load it. `make pack` creates an installable ZIP. If the installation directory is already a Git checkout, update that checkout directly; `make install` refuses to overwrite it.
 
 ## Development
+
+Compiled GSettings schemas are committed for direct Gitpulsar installs. After pulling this update, restart the GNOME session to load the new preferences and runtime code.
 
 Run `make test` for syntax and ownership/geometry regression checks, and `make pack` to verify packaging. Real GNOME probes use isolated settings and the actual Tweaks extension; instructions and results are in [docs/VALIDATION.md](docs/VALIDATION.md). CI runs the portable checks and packages an artifact; it does not promote `testing` to `main`.
 

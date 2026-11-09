@@ -7,3 +7,5 @@
 - Use actual monitor work areas and ThemeContext scaling, not assumed screen dimensions.
 - Run `make test` and `make pack`. For layout, input or lifecycle changes, also run the isolated native probe described in docs/VALIDATION.md.
 - Do not bump the version again for subsequent commits in the same pending testing update.
+
+- Report any changes outside the user’s explicit requests in the final response.

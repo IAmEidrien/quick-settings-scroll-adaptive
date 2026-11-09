@@ -26,8 +26,8 @@ class Actor {
 const Clutter = {BinLayout: class {}, ScrollDirection: {SMOOTH: 0, UP: 1, DOWN: 2, LEFT: 3}};
 const code = readFileSync(new URL('../lib/overlay-scroll.js', import.meta.url), 'utf8')
     .replace(/^import .*;\n/gm, '').replace(/^export /gm, '');
-const {HeightLimit, OverlayScroll, canScroll, scrollDelta} = new Function('Clutter', 'GObject', 'St', 'RoundedClip',
-    `${code}\nreturn {HeightLimit, OverlayScroll, canScroll, scrollDelta};`)(Clutter, {registerClass: c => c},
+const {HeightLimit, OverlayScroll, canScroll, scrollDelta, boundedDelta} = new Function('Clutter', 'GObject', 'St', 'RoundedClip',
+    `${code}\nreturn {HeightLimit, OverlayScroll, canScroll, scrollDelta, boundedDelta};`)(Clutter, {registerClass: c => c},
     {ScrollView: Actor, Viewport: Actor, PolicyType: {NEVER: 0, EXTERNAL: 1}}, class {constructor(box) { this.box = box; }});
 
 function fixture() {
@@ -100,4 +100,12 @@ test('wheel direction includes smooth scrolling, excludes horizontal', () => {
     assert.equal(scrollDelta(event(0, -0.25)), -0.25);
     assert.equal(scrollDelta(event(1)), -1); assert.equal(scrollDelta(event(2)), 1);
     assert.equal(scrollDelta(event(3)), 0);
+});
+
+test('large events are capped at half a viewport without changing ordinary deltas', () => {
+    assert.equal(boundedDelta(400, 1), 1);
+    for (const delta of [-1000, 1000])
+        assert.ok(Math.abs(boundedDelta(400, delta) * Math.pow(400, 2 / 3)) <= 200);
+    assert.equal(boundedDelta(0, 1), 0);
+    assert.equal(boundedDelta(400, NaN), 0);
 });
