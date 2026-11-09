@@ -1,8 +1,15 @@
 {
     "uuid": "quick-settings-scroll@diskmth.fr",
-    "name": "Quick Settings Scroll",
-    "description": "Makes the GNOME Quick Settings menu scroll when it is taller than the screen.",
-    "shell-version": ["46", "47", "48", "49", "50", "51"],
-    "url": "https://github.com/Disk-MTH/Quick-Settings-Scroll",
-    "version-name": "1.1.0"
+    "name": "Quick Settings Scroll Adaptive",
+    "description": "Keeps Quick Settings and floating Quick Settings Tweaks submenus within the screen, with independent scrolling.",
+    "shell-version": [
+        "46",
+        "47",
+        "48",
+        "49",
+        "50",
+        "51"
+    ],
+    "url": "https://github.com/IAmEidrien/quick-settings-scroll-adaptive",
+    "version-name": "1.1.0-adaptive1"
 }

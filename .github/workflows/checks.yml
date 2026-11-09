@@ -1,0 +1,22 @@
+name: Checks
+on:
+  push:
+    branches: [testing, main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: make test
+      - run: python3 -m py_compile tests/native/run.py
+      - run: make pack
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quick-settings-scroll-adaptive
+          path: '*.shell-extension.zip'

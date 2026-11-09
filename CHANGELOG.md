@@ -3,6 +3,20 @@
 All notable changes to this project will be documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.0-adaptive1] - 2026-11-09
+
+### Added
+- Independently constrained, scrollable floating Quick Settings Tweaks overlays, including 200% scaling, keyboard focus visibility and dynamic content changes.
+- Theme-derived clipping for floating overlay corners, without replacing the submenu box or Tweaks' animation target.
+- Portable regression coverage, isolated GNOME integration probes and a `testing` branch CI workflow.
+
+### Fixed
+- Wheel input behind floating overlays no longer scrolls the underlying menu.
+- Height limits follow the source monitor's work area and preserve unrelated inline styles.
+- Floating mode changes and actor destruction restore owned wrappers and cancel pending layout callbacks.
+
+The upstream history below is retained for attribution; its validation statements describe upstream releases.
+
 ## [1.1.0] - 2026-10-08
 
 ### Added

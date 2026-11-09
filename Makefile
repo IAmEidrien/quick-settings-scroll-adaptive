@@ -1,5 +1,5 @@
 # Quick Settings Scroll: install / package / test.
-# Tested on GNOME Shell 49, 50 and 51.
+# See docs/VALIDATION.md for the tested Shell and Tweaks versions.
 
 UUID        := quick-settings-scroll@diskmth.fr
 USER_EXTDIR := $(HOME)/.local/share/gnome-shell/extensions/$(UUID)
@@ -9,7 +9,7 @@ NESTED_CFG  := /tmp/quick-settings-scroll-nested-config
 
 SOURCES     := extension.js $(wildcard lib/*.js)
 
-.PHONY: install uninstall enable disable pack nested nested-config test-syntax clean help
+.PHONY: install uninstall enable disable pack nested nested-config test test-syntax clean help
 
 help:
 	@printf "Targets:\n"
@@ -19,22 +19,26 @@ help:
 	@printf "  disable      Disable the extension via gnome-extensions\n"
 	@printf "  nested       Install, then run a nested shell with it enabled\n"
 	@printf "  pack         Build a publishable .shell-extension.zip\n"
+	@printf "  test         Syntax and regression checks\n"
 	@printf "  test-syntax  Parse every JS file\n"
 	@printf "  clean        Remove generated files\n"
 
 # Directories are replaced rather than merged, so a file dropped from the
 # source tree does not live on in the installed copy.
 install:
+	@test ! -e "$(USER_EXTDIR)/.git" || { printf "Git-managed installation: update its checkout instead.\n"; exit 1; }
 	@mkdir -p "$(USER_EXTDIR)"
 	@cp metadata.json extension.js stylesheet.css "$(USER_EXTDIR)/"
 	@rm -rf "$(USER_EXTDIR)/lib"
 	@cp -r lib "$(USER_EXTDIR)/"
+	@cp -r LICENSES docs "$(USER_EXTDIR)/"
 	@cp LICENSE README.md CHANGELOG.md "$(USER_EXTDIR)/" 2>/dev/null || true
 	@printf "Installed to %s\n" "$(USER_EXTDIR)"
 	@printf "Restart GNOME Shell (Xorg: Alt+F2 r ; Wayland: log out / log in)\n"
 	@printf "or try it without touching this session:  make nested\n"
 
 uninstall:
+	@test ! -e "$(USER_EXTDIR)/.git" || { printf "Refusing to remove a Git checkout.\n"; exit 1; }
 	@rm -rf "$(USER_EXTDIR)"
 	@printf "Removed %s\n" "$(USER_EXTDIR)"
 
@@ -79,18 +83,21 @@ nested-config:
 
 # Parse only. Running these would need the shell: they import
 # resource:///org/gnome/shell/..., which exists nowhere else.
+test: test-syntax
+	@node --test tests/*.test.mjs
+
 test-syntax:
 	@for f in $(SOURCES); do \
 	    printf "checking %-32s " "$$f"; \
-	    node --check "$$f" >/dev/null 2>&1 && printf "OK\n" \
-	        || { printf "FAIL\n"; node --check "$$f"; exit 1; }; \
+	    node --input-type=module --check < "$$f" >/dev/null 2>&1 && printf "OK\n" \
+	        || { printf "FAIL\n"; node --input-type=module --check < "$$f"; exit 1; }; \
 	done
 
 pack:
 	@rm -f "$(ZIPNAME)"
 	@zip -qr "$(ZIPNAME)" \
 	    metadata.json extension.js stylesheet.css lib \
-	    LICENSE README.md CHANGELOG.md
+	    LICENSE LICENSES docs README.md CHANGELOG.md
 	@printf "Built %s\n" "$(ZIPNAME)"
 
 clean:

@@ -26,3 +26,5 @@ node_modules/
 temp/
 /image.png
 /image copy*.png
+
+__pycache__/
